@@ -1,0 +1,11 @@
+# Si lo anuncios aparece de manera rando
+isRando: true
+# si lo anuncios se enviá en la consola
+sendToConsole: false
+# Cantidad de tiempo en tick
+frequency: 200
+# El prefijo de los anuncios
+prefix: '<dark_gray>[</dark_gray><b><gradient:#F3904F:#E7654A>Example</gradient></b><dark_gray>]</dark_gray> '
+announcements:
+  - "<hover:show_text:hola mundo><gradient:#98f8dd:#F6FF58>Hola Mundo</gradient></hover>"
+  - "<gradient:#F4C4F3:#EC00E9><click:open_url:https://tu.discord.gg:>Click para abrir el discord</click></gradient>"

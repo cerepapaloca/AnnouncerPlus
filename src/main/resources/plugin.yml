@@ -1,0 +1,15 @@
+name: AnnouncerPlus
+version: '1.0'
+main: ceres.ap.AnnouncerPlusCore
+api-version: '1.20'
+prefix: Announcer Plus
+load: STARTUP
+authors: [ Ceres ]
+description: Enviá anuncios automáticamente
+softdepend:
+  - PlaceholderAPI
+commands:
+  announcerplus:
+    aliases: ap
+    description: comando principal de Announcer Plus
+    permission: announcerplus.command.main
