@@ -1,5 +1,6 @@
 package ceres.ap;
 
+import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import lombok.Getter;
 import me.clip.placeholderapi.PlaceholderAPI;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -23,7 +24,7 @@ public final class AnnouncerPlusCore extends JavaPlugin {
     private static AnnouncerPlusCore instance;
     private static boolean hasPlaceholder;
     @Getter
-    private BukkitTask task;
+    private ScheduledTask task;
     private static Config config;
     @Getter
     private static MiniMessage miniMessage = MiniMessage.miniMessage();
@@ -65,40 +66,38 @@ public final class AnnouncerPlusCore extends JavaPlugin {
         start();
     }
 
+    private int counter = 0;
+
     public void start(){
         if (task != null && !task.isCancelled()) task.cancel();
-        task = new BukkitRunnable(){
-
-            private int counter = 0;
-            @Override
-            public void run() {
-                List<CommandSender> senders = new ArrayList<>(Bukkit.getOnlinePlayers());
-                if (config.isSendToConsole()) senders.add(Bukkit.getConsoleSender());
-                String message;
-                if (config.getAnnouncements() == null || config.getAnnouncements().isEmpty()) throw new NullPointerException("La lista de mensaje esta vaciá o no existe");
-                if (config.isRando()) {
-                    Random rand = new Random();
-                    message = config.getAnnouncements().get(rand.nextInt(config.getAnnouncements().size()));
-                }else {
-                    message = config.getAnnouncements().get(counter % config.getAnnouncements().size());
-                    counter++;
-                }
-                String prefix = config.getPrefix();
-                if (prefix == null) prefix = "";
-                String finalPrefix = prefix;
-                senders.forEach(sender -> {
-                    if (hasPlaceholder) {
-                        if (sender instanceof Player player) {
-                            sender.sendMessage(Utils.chatColorLegacyToComponent(finalPrefix + PlaceholderAPI.setPlaceholders(player, message)));
-                        }else {
-                            sender.sendMessage(Utils.chatColorLegacyToComponent(finalPrefix + message));
-                        }
+        counter = 0;
+        task = Bukkit.getRegionScheduler().runAtFixedRate(this, Bukkit.getWorlds().get(0), 0, 0, (task) -> {
+            List<CommandSender> senders = new ArrayList<>(Bukkit.getOnlinePlayers());
+            if (config.isSendToConsole()) senders.add(Bukkit.getConsoleSender());
+            String message;
+            if (config.getAnnouncements() == null || config.getAnnouncements().isEmpty()) throw new NullPointerException("La lista de mensaje esta vaciá o no existe");
+            if (config.isRando()) {
+                Random rand = new Random();
+                message = config.getAnnouncements().get(rand.nextInt(config.getAnnouncements().size()));
+            }else {
+                message = config.getAnnouncements().get(counter % config.getAnnouncements().size());
+                counter++;
+            }
+            String prefix = config.getPrefix();
+            if (prefix == null) prefix = "";
+            String finalPrefix = prefix;
+            senders.forEach(sender -> {
+                if (hasPlaceholder) {
+                    if (sender instanceof Player player) {
+                        sender.sendMessage(Utils.chatColorLegacyToComponent(finalPrefix + PlaceholderAPI.setPlaceholders(player, message)));
                     }else {
                         sender.sendMessage(Utils.chatColorLegacyToComponent(finalPrefix + message));
                     }
-                });
-            }
-        }.runTaskTimerAsynchronously(this, config.getFrequency(), config.getFrequency());
+                }else {
+                    sender.sendMessage(Utils.chatColorLegacyToComponent(finalPrefix + message));
+                }
+            });
+        },  config.getFrequency(), config.getFrequency());
     }
 
 
